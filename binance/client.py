@@ -1,5 +1,6 @@
 from typing import Dict, Optional, List, Tuple
 
+import logging
 import aiohttp
 import asyncio
 import hashlib
@@ -310,7 +311,7 @@ class Client(BaseClient):
     def _request(self, method, uri: str, signed: bool, force_params: bool = False, **kwargs):
 
         kwargs = self._get_request_kwargs(method, signed, force_params, **kwargs)
-
+        logging.getLogger(__name__).debug("Send: %s", kwargs)
         self.response = getattr(self.session, method)(uri, **kwargs)
         return self._handle_response(self.response)
 
@@ -323,6 +324,7 @@ class Client(BaseClient):
         if not (200 <= response.status_code < 300):
             raise BinanceAPIException(response, response.status_code, response.text)
         try:
+            logging.getLogger(__name__).debug("Received: %s", response.json())
             return response.json()
         except ValueError:
             raise BinanceRequestException('Invalid Response: %s' % response.text)
